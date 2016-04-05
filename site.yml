@@ -1,0 +1,5 @@
+- hosts: mongo_servers
+  user: root
+  gather_facts: no
+  roles:
+  - role: mongod

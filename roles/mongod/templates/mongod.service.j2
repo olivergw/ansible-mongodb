@@ -1,0 +1,12 @@
+[Unit]
+Description=High-performance, schema-free document-oriented database
+After=network.target
+
+[Service]
+Type=simple
+User=mongod
+Group=mongod
+ExecStart=/opt/mongodb/mongodb-linux-x86_64-3.2.4/bin/mongod -f /etc/mongod.conf
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,51 @@
+---
+# Ansible script for installing a standalone MongoDB server on Centos 7
+# Author: Oliver Gillum-Webb
+
+- name: Install selinux bindings
+  yum: name=libselinux-python state=present
+
+- name: Create init script to disable THP
+  template: src=disable-transparent-hugepages.j2 dest=/etc/init.d/disable-transparent-hugepages
+
+- name: Make init script executable
+  file: path=/etc/init.d/disable-transparent-hugepages mode=0755
+
+- name: Configure CentOS to run init script at boot
+  shell: sudo chkconfig --add disable-transparent-hugepages
+
+- name: Create MongoDB user
+  shell: useradd -r -U mongod
+ 
+- name: Create directory for MongoDB Application
+  file: path=/opt/mongodb state=directory mode=0755 owner=mongod group=mongod
+
+- name: Create directory for MongoDB Data
+  file: path=/data/db state=directory mode=0755 owner=mongod group=mongod
+
+- name: Create directory for MongoDB Logs
+  file: path=/data/log state=directory mode=0755 owner=mongod group=mongod
+
+- name: Download and unzip MongoDB 
+  unarchive: src=https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.2.4.tgz dest=/opt/mongodb copy=no
+
+- name: Set owner and permissions on MongoDB application directory
+  file: path=/opt/mongodb mode=0755 owner=mongod group=mongod recurse=yes
+
+- name: Set environment path 
+  shell: echo "export PATH=/opt/mongodb/mongodb-linux-x86_64-3.2.4/bin:$PATH" >> /etc/environment
+
+- name: Create the MongoDB configuration file
+  template: src=mongod.conf.j2 dest=/etc/mongod.conf mode=0655
+
+- name: Create the MongoDB systemd file
+  template: src=mongod.service.j2 dest=/usr/lib/systemd/system/mongod.service
+
+- name: Reload systemd 
+  shell: systemctl --system daemon-reload
+
+- name: Start mongod.service       
+  shell: systemctl start mongod.service
+
+- name: Enable mongo.service at startup
+  shell: systemctl enable mongod.service

@@ -1,0 +1,14 @@
+systemLog:
+  destination: file
+  logAppend: true
+  path: /data/log/mongod.log
+
+storage:
+  dbPath: /data/db
+  journal:
+    enabled: true
+
+net:
+  port: 27017
+
+
